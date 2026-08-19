@@ -1176,18 +1176,13 @@ function getAttackTier(row, profileArray) {
     }
     return tier;
 }
-function sendTieredClicks(button, row, tier, sentSoFar) {
-    cansend = false;
-    button.click();
-    setTimeout(function () {
-        var stillUsable = !button.hasClass('farm_icon_disabled') && button.html() != undefined;
-        if (sentSoFar < tier && stillUsable) {
-            row.show();
-            sendTieredClicks(button, row, tier, sentSoFar + 1);
-        } else {
-            cansend = true;
-        }
-    }, 700);
+function getCurrentOutgoingAttacks(row) {
+    var attackCell = row.children("td").eq(4);
+    var attackImg = attackCell.find('img');
+    if (typeof attackImg.prop('tooltipText') != 'undefined') {
+        return parseInt(attackImg.prop('tooltipText').replace(/\D/g, '')) || 0;
+    }
+    return 0;
 }
 function tryClick(button) {
     if (cansend && filtersApplied) {
@@ -1200,11 +1195,13 @@ function tryClick(button) {
             }
             else if (userset[s.tiered_enable]) {
                 var row = button.closest('tr');
-                var tier = getAttackTier(row, userset);
-                if (tier <= 0) {
+                var target = getAttackTier(row, userset);
+                var currentAttacks = getCurrentOutgoingAttacks(row);
+                if (target <= 0 || currentAttacks >= target) {
                     row.hide();
                 } else {
-                    sendTieredClicks(button, row, tier, 1);
+                    button.click();
+                    doTime(200);
                 }
             }
             else {
