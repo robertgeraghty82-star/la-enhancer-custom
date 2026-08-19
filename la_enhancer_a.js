@@ -314,10 +314,30 @@ function customSendUnits(link, target_village, template_id, button) {
     if (!checkIfNextVillage()) {
         button.closest("tr").hide();
         link = window.top.$(link);
-        if (link.hasClass('farm_icon_disabled'))return false;
+        if (!userset[s.smart_ab] && link.hasClass('farm_icon_disabled'))return false;
         var data = {target: target_village, template_id: template_id, source: window.top.game_data.village.id};
         window.top.$.post(window.top.Accountmanager.send_units_link, data, function (data) {
             if (data.error) {
+                if (userset[s.smart_ab] && data.error === "Not enough units available") {
+                    var row = button.closest('tr');
+                    var villageKey = row.attr('name');
+                    var aButton = row.children("td").eq(9).children("a");
+                    var bButton = row.children("td").eq(10).children("a");
+                    var isA = button.is(aButton);
+                    if (isA) {
+                        abSentTracker[villageKey] = true;
+                        if (bButton.html() != undefined) {
+                            bButton.click();
+                        } else {
+                            row.hide();
+                            delete abSentTracker[villageKey];
+                        }
+                    } else {
+                        row.hide();
+                        delete abSentTracker[villageKey];
+                    }
+                    return false;
+                }
                 if (userset[s.next_village_units] && data.error === "Not enough units available") {
                     if (cansend && filtersApplied)
                         getNewVillage("n");
@@ -1167,9 +1187,6 @@ function turnOnHotkeys() {
     };
 }
 var abSentTracker = {};
-function isButtonUsable(btn) {
-    return !(btn.hasClass("farm_icon_disabled") || btn.html() == undefined);
-}
 function tryClick(button) {
     if (cansend && filtersApplied) {
         if (!checkIfNextVillage()) {
@@ -1179,25 +1196,24 @@ function tryClick(button) {
                 var aButton = smartRow.children("td").eq(9).children("a");
                 var bButton = smartRow.children("td").eq(10).children("a");
                 var alreadySentA = !!abSentTracker[villageKey];
+                var targetButton = alreadySentA ? bButton : aButton;
 
-                if (!alreadySentA && isButtonUsable(aButton)) {
-                    aButton.click();
+                if (targetButton.html() == undefined) {
+                    window.top.UI.ErrorMessage("No troops available for this village. Skipping...", 500);
+                    smartRow.hide();
+                    delete abSentTracker[villageKey];
+                    return;
+                }
+                if (!alreadySentA) {
                     abSentTracker[villageKey] = true;
                     setTimeout(function () {
                         smartRow.show();
                     }, 300);
-                    doTime(200);
-                    return;
-                }
-                if (isButtonUsable(bButton)) {
-                    bButton.click();
+                } else {
                     delete abSentTracker[villageKey];
-                    doTime(200);
-                    return;
                 }
-                window.top.UI.ErrorMessage("No troops available for this village. Skipping...", 500);
-                smartRow.hide();
-                delete abSentTracker[villageKey];
+                targetButton.click();
+                doTime(200);
                 return;
             }
             console.log(button.html());
