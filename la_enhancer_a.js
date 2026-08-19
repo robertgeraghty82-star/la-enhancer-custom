@@ -234,6 +234,7 @@ function highlightRows() {
 }
 function getNewVillage(way) {
     //console.log(getNewVillage);
+    smartAbStock = null;
     if (way == "n")
         window.top.UI.InfoMessage('Switching to next village...', 500); else
         window.top.UI.InfoMessage('Switching to previous village...', 500);
