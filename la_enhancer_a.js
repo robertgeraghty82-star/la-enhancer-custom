@@ -1145,8 +1145,13 @@ function turnOnHotkeys() {
                     row.hide();
                     break;
                 case keycodes.master:
-                    if (cansend && filtersApplied)
-                        selectMasterButton(row);
+                    if (cansend && filtersApplied) {
+                        if (userset[s.smart_ab]) {
+                            tryClick(aButton);
+                        } else {
+                            selectMasterButton(row);
+                        }
+                    }
                     break;
                 case keycodes.left:
                     getNewVillage("p");
