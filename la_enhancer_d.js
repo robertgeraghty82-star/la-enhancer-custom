@@ -1165,13 +1165,9 @@ function getAttackTier(row, profileArray) {
             total = wood + clay + iron;
         }
     }
-    var bracket = 80;
-    var offset = 40;
-    var maxAttacks = 10;
-    if (total <= offset) {
-        return 0;
-    }
-    var tier = Math.ceil((total - offset) / bracket);
+    var bracket = 320;
+    var maxAttacks = 50;
+    var tier = Math.max(1, Math.ceil(total / bracket));
     if (tier > maxAttacks) {
         tier = maxAttacks;
     }
