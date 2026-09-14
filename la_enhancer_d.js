@@ -1187,7 +1187,6 @@ function getCurrentOutgoingAttacks(row) {
     }
     return 0;
 }
-var tieredSentTracker = {};
 function tryClick(button) {
     if (cansend && filtersApplied) {
         if (!checkIfNextVillage()) {
@@ -1199,15 +1198,12 @@ function tryClick(button) {
             }
             else if (userset[s.tiered_enable]) {
                 var row = button.closest('tr');
-                var villageKey = row.attr('name');
                 var target = getAttackTier(row, userset);
-                var sentSoFar = tieredSentTracker[villageKey] || 0;
-                if (target <= 0 || sentSoFar >= target) {
+                var existing = getCurrentOutgoingAttacks(row);
+                if (target <= 0 || existing >= target) {
                     row.hide();
-                    delete tieredSentTracker[villageKey];
                 } else {
                     button.click();
-                    tieredSentTracker[villageKey] = sentSoFar + 1;
                     doTime(200);
                 }
             }
